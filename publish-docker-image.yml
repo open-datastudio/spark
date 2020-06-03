@@ -1,0 +1,39 @@
+name: Publish docker image
+
+on:
+  release:
+    types: [created]
+  pull_request:
+    branches:
+    - master
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout latest code
+      uses: actions/checkout@v2
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      # access it through ${{ steps.get_version.outputs.VERSION }}
+    - name: Set up JDK 8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - name: Build distribution
+      run: |-
+        ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pmesos -Pyarn -Pkubernetes
+    - name: Build docker image
+      run: |-
+        ./bin/docker-image-tool.sh -r opendatastudio -t {{ steps.get_version.outputs.VERSION }} build
+    - name: Priint image
+      run: |-
+        docker images
+    - name: Push
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: opendatastudio/spark
+#        username: ${{ secrets.DOCKER_USERNAME }}
+#        password: ${{ secrets.DOCKER_PASSWORD }}
+        tags: "${{ steps.get_version.outputs.VERSION }}"
