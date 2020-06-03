@@ -21,6 +21,9 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 8
+    - uses: r-lib/actions/setup-r@v1
+      with:
+        r-version: '3.6.2'
     - name: Build distribution
       run: |-
         ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pmesos -Pyarn -Pkubernetes
