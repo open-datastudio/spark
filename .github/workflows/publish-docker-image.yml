@@ -1,0 +1,58 @@
+name: Publish docker image
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout latest code
+      uses: actions/checkout@v2
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      # access it through ${{ steps.get_version.outputs.VERSION }}
+    - name: Set up JDK 8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - uses: r-lib/actions/setup-r@v1
+      with:
+        r-version: '3.6.2'
+    - name: install R packages
+      run: |
+        sudo apt-get install -y texlive-latex-base texlive texlive-fonts-extra texinfo qpdf
+        sudo Rscript -e "install.packages(c('curl', 'xml2', 'httr', 'devtools', 'testthat', 'knitr', 'rmarkdown', 'roxygen2', 'e1071', 'survival'), repos='https://cloud.r-project.org/')"
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        DEBCONF_NONINTERACTIVE_SEEN: true
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+        architecture: 'x64'
+    - name: Apply Patch
+      run: |-
+        # Remove -s option of tini. while gvisor does not support PR_SET_CHILD_SUBREAPER
+        sed -i 's/tini -s/tini/' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/entrypoint.sh
+        # Add passwd entry. otherwise, entrypoint.sh will shows 'Container ENTRYPOINT failed to add passwd entry for anonymous UID'
+        # and executor will fail with  javax.security.auth.login.LoginException: java.lang.NullPointerException: invalid null input: name at com.sun.security.auth.UnixPrincipal.<init>(UnixPrincipal.java:71)
+        sed -i '/^USER/d' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
+        echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid && chown -R spark:spark /opt/spark/work-dir' >> resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
+        echo 'USER ${spark_uid}' >> resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
+    - name: Build distribution
+      run: |-
+        ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        DEBCONF_NONINTERACTIVE_SEEN: true
+    - name: Build docker image
+      run: |-
+        ./bin/docker-image-tool.sh -r opendatastudio -t ${{ steps.get_version.outputs.VERSION }} build
+    - name: Push image
+      run: |-
+        docker images
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        docker push opendatastudio/spark:${{ steps.get_version.outputs.VERSION }}
