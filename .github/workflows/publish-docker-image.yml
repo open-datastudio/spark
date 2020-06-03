@@ -24,6 +24,9 @@ jobs:
     - uses: r-lib/actions/setup-r@v1
       with:
         r-version: '3.6.2'
+    - name: install R packages
+      run: |
+        sudo Rscript -e "install.packages(c('knitr'), repos='https://cloud.r-project.org/')"
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
@@ -34,7 +37,7 @@ jobs:
     - name: Build docker image
       run: |-
         ./bin/docker-image-tool.sh -r opendatastudio -t {{ steps.get_version.outputs.VERSION }} build
-    - name: Priint image
+    - name: Print image
       run: |-
         docker images
     - name: Push
