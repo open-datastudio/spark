@@ -37,13 +37,13 @@ jobs:
         architecture: 'x64'
     - name: Build distribution
       run: |-
-        ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pmesos -Pyarn -Pkubernetes
+        ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
       env:
         DEBIAN_FRONTEND: noninteractive
         DEBCONF_NONINTERACTIVE_SEEN: true
     - name: Build docker image
       run: |-
-        ./bin/docker-image-tool.sh -r opendatastudio -t {{ steps.get_version.outputs.VERSION }} build
+        ./bin/docker-image-tool.sh -r opendatastudio -t latest build
     - name: Print image
       run: |-
         docker images
