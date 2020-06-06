@@ -2,7 +2,7 @@ name: Publish docker image
 
 on:
   release:
-    types: [created, prereleased]
+    types: [created]
 
 jobs:
   publish-release:
@@ -33,6 +33,10 @@ jobs:
       with:
         python-version: '3.x'
         architecture: 'x64'
+    - name: Apply Patch
+      run: |-
+        # remove -s option of tini. while gvisor does not support PR_SET_CHILD_SUBREAPER
+        sed -i 's/tini -s/tini/' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/entrypoint.sh
     - name: Build distribution
       run: |-
         ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
