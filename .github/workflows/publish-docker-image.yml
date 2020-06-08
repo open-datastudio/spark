@@ -40,7 +40,7 @@ jobs:
         # Add passwd entry. otherwise, entrypoint.sh will shows 'Container ENTRYPOINT failed to add passwd entry for anonymous UID'
         # and executor will fail with  javax.security.auth.login.LoginException: java.lang.NullPointerException: invalid null input: name at com.sun.security.auth.UnixPrincipal.<init>(UnixPrincipal.java:71)
         sed -i '/^USER/d' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
-        echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid' >> resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
+        echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid && chown -R spark:spark /opt/spark/work-dir' >> resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
         echo 'USER ${spark_uid}' >> resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
     - name: Build distribution
       run: |-
