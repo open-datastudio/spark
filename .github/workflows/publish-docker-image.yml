@@ -48,7 +48,7 @@ jobs:
         echo 'USER ${spark_uid}' >> resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
     - name: Build distribution
       run: |-
-        ./dev/make-distribution.sh --name spark --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
+        ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
       env:
         DEBIAN_FRONTEND: noninteractive
         DEBCONF_NONINTERACTIVE_SEEN: true
