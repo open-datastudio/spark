@@ -67,6 +67,11 @@ jobs:
         ls -al python/lib
         ls -al python/pyspark
         ls -al R
+        ls -al dist
+        ls -al dist/python
+        ls -al dist/python/lib
+        ls -al dist/python/pyspark
+        ls -al dist/R
     - name: Build docker image
       run: |-
         ./bin/docker-image-tool.sh -r opendatastudio -t test build
