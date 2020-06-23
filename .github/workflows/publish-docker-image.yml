@@ -1,8 +1,9 @@
 name: Publish docker image
 
 on:
-  release:
-    types: [created]
+  pull_request:
+    branches:
+    - *
 
 jobs:
   publish-release:
@@ -69,5 +70,5 @@ jobs:
     - name: Push image
       run: |-
         docker images
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        docker push opendatastudio/spark:${{ steps.get_version.outputs.VERSION }}
+        #echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        #docker push opendatastudio/spark:${{ steps.get_version.outputs.VERSION }}
