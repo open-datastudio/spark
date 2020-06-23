@@ -1,6 +1,9 @@
 name: Publish docker image
 
 on: [pull_request]
+#on:
+#  release:
+#    types: [created]
 
 jobs:
   publish-release:
@@ -60,21 +63,10 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
         DEBCONF_NONINTERACTIVE_SEEN: true
-    - name: List dir
-      run: |-
-        ls -al
-        ls -al python
-        ls -al python/lib
-        ls -al python/pyspark
-        ls -al R
-        ls -al dist
-        ls -al dist/python
-        ls -al dist/python/lib
-        ls -al dist/python/pyspark
-        ls -al dist/R
     - name: Build docker image
       run: |-
-        ./bin/docker-image-tool.sh -r opendatastudio -t test -p -R build
+        #./bin/docker-image-tool.sh -r opendatastudio -t ${{ steps.get_version.outputs.VERSION }} -p kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
+        ./bin/docker-image-tool.sh -r opendatastudio -t test -p kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
     - name: Push image
       run: |-
         docker images
