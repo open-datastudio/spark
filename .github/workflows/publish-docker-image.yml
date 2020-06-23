@@ -59,6 +59,7 @@ jobs:
     - name: Build distribution
       run: |-
         ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
+        ls -al
       env:
         DEBIAN_FRONTEND: noninteractive
         DEBCONF_NONINTERACTIVE_SEEN: true
