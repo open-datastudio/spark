@@ -74,7 +74,7 @@ jobs:
         ls -al dist/R
     - name: Build docker image
       run: |-
-        ./bin/docker-image-tool.sh -r opendatastudio -t test build
+        ./bin/docker-image-tool.sh -r opendatastudio -t test -p -R build
     - name: Push image
       run: |-
         docker images
