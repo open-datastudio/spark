@@ -1,9 +1,6 @@
 name: Publish docker image
 
-on:
-  pull_request:
-    branches:
-    - *
+on: [push, pull_request]
 
 jobs:
   publish-release:
