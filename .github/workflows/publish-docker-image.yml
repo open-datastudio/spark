@@ -1,6 +1,6 @@
 name: Publish docker image
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   publish-release:
@@ -57,13 +57,19 @@ jobs:
     - name: Build distribution
       run: |-
         ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
-        ls -al
       env:
         DEBIAN_FRONTEND: noninteractive
         DEBCONF_NONINTERACTIVE_SEEN: true
+    - name: List dir
+      run: |-
+        ls -al
+        ls -al python
+        ls -al python/lib
+        ls -al python/pyspark
+        ls -al R
     - name: Build docker image
       run: |-
-        ./bin/docker-image-tool.sh -r opendatastudio -t ${{ steps.get_version.outputs.VERSION }} build
+        ./bin/docker-image-tool.sh -r opendatastudio -t test build
     - name: Push image
       run: |-
         docker images
