@@ -65,8 +65,8 @@ jobs:
         DEBCONF_NONINTERACTIVE_SEEN: true
     - name: Build docker image
       run: |-
-        #./bin/docker-image-tool.sh -r opendatastudio -t ${{ steps.get_version.outputs.VERSION }} -p kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
-        ./bin/docker-image-tool.sh -r opendatastudio -t test -p kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
+        #./bin/docker-image-tool.sh -r opendatastudio -t ${{ steps.get_version.outputs.VERSION }} -p dist/kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R dist/kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
+        ./bin/docker-image-tool.sh -r opendatastudio -t test -p dist/kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R dist/kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
     - name: Push image
       run: |-
         docker images
