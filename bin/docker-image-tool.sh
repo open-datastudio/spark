@@ -180,7 +180,10 @@ function build {
   if [ $? -ne 0 ]; then
     pwd
     ls -al
-    ls -al pyspark    
+    ls -al python
+    ls -al python/pyspark
+    ls -al R
+    ls -al R/lib
     error "Failed to build Spark JVM Docker image, please refer to Docker build output for details."
   fi
   if [ "${CROSS_BUILD}" != "false" ]; then
