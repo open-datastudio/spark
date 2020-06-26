@@ -178,6 +178,7 @@ function build {
     -t $(image_ref spark) \
     -f "$BASEDOCKERFILE" .)
   if [ $? -ne 0 ]; then
+    cat "$BASEDOCKERFILE"
     pwd
     ls -al
     ls -al python
