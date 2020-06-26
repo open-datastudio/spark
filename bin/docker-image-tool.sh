@@ -178,6 +178,9 @@ function build {
     -t $(image_ref spark) \
     -f "$BASEDOCKERFILE" .)
   if [ $? -ne 0 ]; then
+    pwd
+    ls -al
+    ls -al pyspark    
     error "Failed to build Spark JVM Docker image, please refer to Docker build output for details."
   fi
   if [ "${CROSS_BUILD}" != "false" ]; then

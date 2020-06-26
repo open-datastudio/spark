@@ -63,6 +63,16 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
         DEBCONF_NONINTERACTIVE_SEEN: true
+    - name: Print dir
+      run: |-
+        ls -al .
+        ls -al python
+        ls -al python/pyspark
+        ls -al R
+        ls -al dist
+        ls -al dist/python
+        ls -al dist/python/pyspark
+        ls -al dist/R
     - name: Build docker image
       run: |-
         #./bin/docker-image-tool.sh -r opendatastudio -t ${{ steps.get_version.outputs.VERSION }} -p dist/kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R dist/kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
