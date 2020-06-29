@@ -42,6 +42,10 @@ jobs:
         # take Dockerfile before WORKDIR starts
         awk '!p;/WORKDIR/{p=1}' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile | grep -v WORKDIR >> /tmp/Dockerfile
 
+        # try add pyspark before apt-get install
+        echo "RUN mkdir /opt/spark/python" >> /tmp/Dockerfile
+        echo "COPY python/pyspark /opt/spark/python/pyspark" >> /tmp/Dockerfile
+
         # and then append pyspark, sparkR requirement
         awk '/RUN mkdir/,/COPY python\/lib/' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/bindings/python/Dockerfile >> /tmp/Dockerfile
         awk '/RUN mkdir/,/ENV R_HOME/' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/bindings/R/Dockerfile >> /tmp/Dockerfile
