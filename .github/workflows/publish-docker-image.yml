@@ -81,9 +81,13 @@ jobs:
         ls -al dist/python
         ls -al dist/python/pyspark
         ls -al dist/R
+        ls -al dist/kubernetes
+        ls -al dist/kubernetes/dockerfiles
+        ls -al dist/kubernetes/dockerfiles/spark
     - name: Build docker image
+      working-directory: ./dist
       run: |-
-        export SPARK_HOME=`pwd`/dist
+        # export SPARK_HOME=`pwd`/dist
         # ./bin/docker-image-tool.sh -r opendatastudio -t ${{ steps.get_version.outputs.VERSION }} build
         ./bin/docker-image-tool.sh -r opendatastudio -t test build
     - name: Push image
