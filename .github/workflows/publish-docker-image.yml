@@ -95,3 +95,5 @@ jobs:
         docker images
         #echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
         #docker push opendatastudio/spark:${{ steps.get_version.outputs.VERSION }}
+      env:
+        DOCKER_BUILDKIT: 1 # failed to export image: failed to create image: failed to get layer https://stackoverflow.com/a/62409523
