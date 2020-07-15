@@ -79,7 +79,7 @@ jobs:
         ls -al dist/R
     - name: Build docker image
       run: |-
-        touch RELEASE
+        export SPARK_HOME=`pwd`/dist
         ./bin/docker-image-tool.sh -r opendatastudio -t ${{ steps.get_version.outputs.VERSION }} build
         #./bin/docker-image-tool.sh -r opendatastudio -t test -p dist/kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R dist/kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
     - name: Push image
