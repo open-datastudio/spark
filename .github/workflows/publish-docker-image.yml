@@ -60,7 +60,7 @@ jobs:
 
         # patch 'mkdir' -> 'mkdir -p'
         cat /tmp/Dockerfile | \
-        sed 's:RUN mkdir /opt/spark/python:RUN mkdir -p /opt/spark/python:g' | \
+        sed 's:RUN mkdir ${SPARK_HOME}/python:RUN mkdir -p ${SPARK_HOME}/python:g' | \
         sed 's:RUN mkdir ${SPARK_HOME}/R:RUN mkdir -p ${SPARK_HOME}/R:g' > resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
 
         # display
