@@ -43,19 +43,22 @@ jobs:
         echo 'USER ${spark_uid}' >> $SPARK_ENTRYPOINT
 
         # Patch python Dockerfile to install multiple verison
-        sed -in '1,/RUN apt-get update/p;/rm -r \/root\/.cache/,$p' $PYTHON_DOCKERFILE
-        sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make/g' $PYTHON_DOCKERFILE
-
-        cat <<EOT >> $PYTHON_DOCKERFILE
-        RUN curl https://pyenv.run | bash && \
-            /home/spark/.pyenv/bin/pyenv install 3.6.9 && \
-            /home/spark/.pyenv/bin/pyenv install 3.7.7 && \
-            /home/spark/.pyenv/bin/pyenv install 3.8.1 && \
-            /home/spark/.pyenv/bin/pyenv global 3.7.7 && \
+        cat $PYTHON_DOCKERFILE | sed -n '1,/RUN apt-get update/p;/rm -r \/root\/.cache/,$p' > /tmp/Dockerfile
+        sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make/g' /tmp/Dockerfile
+        
+        cat <<EOT >> /tmp/Dockerfile
+        RUN curl https://pyenv.run | bash &&
+            /home/spark/.pyenv/bin/pyenv install 3.6.9 &&
+            /home/spark/.pyenv/bin/pyenv install 3.7.7 &&
+            /home/spark/.pyenv/bin/pyenv install 3.8.1 &&
+            /home/spark/.pyenv/bin/pyenv global 3.7.7 &&
             rm -rf /tmp/python-build*
         EOT
 
+        mv /tmp/Dockerfile $PYTHON_DOCKERFILE
+
         # print
+        cat $SPARK_ENTRYPOINT
         cat $BASE_DOCKERFILE
         cat $PYTHON_DOCKERFILE
       env:
