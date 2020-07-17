@@ -43,7 +43,8 @@ jobs:
         echo 'USER ${spark_uid}' >> $SPARK_ENTRYPOINT
 
         # Patch python Dockerfile to install multiple verison
-        cat $PYTHON_DOCKERFILE | sed -n '1,/RUN apt-get update/p;/rm -r \/root\/.cache/,$p' > /tmp/Dockerfile
+        cat $PYTHON_DOCKERFILE | sed -n '1,/RUN apt-get update/p;/rm -r \/root\/.cache/,$p' | sed 's/rm -r \/root\/.cache \&\&//g' > /tmp/Dockerfile
+        sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make/g' /tmp/Dockerfile
         sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make/g' /tmp/Dockerfile
         
         cat <<EOT >> /tmp/Dockerfile
