@@ -39,8 +39,8 @@ jobs:
         # Add passwd entry. otherwise, entrypoint.sh will shows 'Container ENTRYPOINT failed to add passwd entry for anonymous UID'
         # and executor will fail with  javax.security.auth.login.LoginException: java.lang.NullPointerException: invalid null input: name at com.sun.security.auth.UnixPrincipal.<init>(UnixPrincipal.java:71)
         sed -i '/^USER/d' $BASE_DOCKERFILE
-        echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid && chown -R spark:spark /opt/spark/work-dir' >> $SPARK_ENTRYPOINT
-        echo 'USER ${spark_uid}' >> $SPARK_ENTRYPOINT
+        echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid && chown -R spark:spark /opt/spark/work-dir' >> $BASE_DOCKERFILE
+        echo 'USER ${spark_uid}' >> $BASE_DOCKERFILE
 
         # Patch python Dockerfile to install multiple verison
         cat $PYTHON_DOCKERFILE | sed -n '1,/RUN apt-get update/p;/rm -r \/root\/.cache/,$p' | sed 's/rm -r \/root\/.cache \&\&//g' > /tmp/Dockerfile
