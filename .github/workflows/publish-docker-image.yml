@@ -36,14 +36,37 @@ jobs:
     - name: Apply Patch
       run: |-
         # Remove -s option of tini. while gvisor does not support PR_SET_CHILD_SUBREAPER
-        sed -i 's/tini -s/tini/' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/entrypoint.sh
+        sed -i 's/tini -s/tini/' $SPARK_ENTRYPOINT
         # Add passwd entry. otherwise, entrypoint.sh will shows 'Container ENTRYPOINT failed to add passwd entry for anonymous UID'
         # and executor will fail with  javax.security.auth.login.LoginException: java.lang.NullPointerException: invalid null input: name at com.sun.security.auth.UnixPrincipal.<init>(UnixPrincipal.java:71)
-        sed -i '/^USER/d' resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
-        echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid && chown -R spark:spark /opt/spark/work-dir' >> resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
-        echo 'USER ${spark_uid}' >> resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
+        sed -i '/^USER/d' $BASE_DOCKERFILE
+        echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid && chown -R spark:spark /opt/spark/work-dir' >> $BASE_DOCKERFILE
+        echo 'USER ${spark_uid}' >> $BASE_DOCKERFILE
+
+        # Patch python Dockerfile to install multiple verison
+        cat $PYTHON_DOCKERFILE | sed -n '1,/RUN apt-get update/p;/rm -r \/root\/.cache/,$p' | sed 's/rm -r \/root\/.cache \&\&//g' > /tmp/Dockerfile
+        sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make/g' /tmp/Dockerfile
+        sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make/g' /tmp/Dockerfile
+        
+        cat <<EOT >> /tmp/Dockerfile
+        RUN cd /home/spark/ && curl https://pyenv.run | bash && \
+            /home/spark/.pyenv/bin/pyenv install 3.6.9 && \
+            /home/spark/.pyenv/bin/pyenv install 3.7.7 && \
+            /home/spark/.pyenv/bin/pyenv install 3.8.1 && \
+            /home/spark/.pyenv/bin/pyenv global 3.7.7 && \
+            rm -rf /tmp/python-build*
+        EOT
+
+        mv /tmp/Dockerfile $PYTHON_DOCKERFILE
+
         # print
-        cat resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
+        cat $SPARK_ENTRYPOINT
+        cat $BASE_DOCKERFILE
+        cat $PYTHON_DOCKERFILE
+      env:
+        SPARK_ENTRYPOINT: resource-managers/kubernetes/docker/src/main/dockerfiles/spark/entrypoint.sh
+        BASE_DOCKERFILE: resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
+        PYTHON_DOCKERFILE: resource-managers/kubernetes/docker/src/main/dockerfiles/spark/bindings/python/Dockerfile
     - name: Build distribution
       run: |-
         ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
