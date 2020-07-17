@@ -47,11 +47,11 @@ jobs:
         sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make/g' /tmp/Dockerfile
         
         cat <<EOT >> /tmp/Dockerfile
-        RUN curl https://pyenv.run | bash &&
-            /home/spark/.pyenv/bin/pyenv install 3.6.9 &&
-            /home/spark/.pyenv/bin/pyenv install 3.7.7 &&
-            /home/spark/.pyenv/bin/pyenv install 3.8.1 &&
-            /home/spark/.pyenv/bin/pyenv global 3.7.7 &&
+        RUN curl https://pyenv.run | bash && \
+            /home/spark/.pyenv/bin/pyenv install 3.6.9 && \
+            /home/spark/.pyenv/bin/pyenv install 3.7.7 && \
+            /home/spark/.pyenv/bin/pyenv install 3.8.1 && \
+            /home/spark/.pyenv/bin/pyenv global 3.7.7 && \
             rm -rf /tmp/python-build*
         EOT
 
