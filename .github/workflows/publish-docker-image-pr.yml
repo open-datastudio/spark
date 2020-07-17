@@ -1,0 +1,83 @@
+name: Pull request
+
+on:
+  pull_request:
+
+jobs:
+  build-pullrequest:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout latest code
+      uses: actions/checkout@v2
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      # access it through ${{ steps.get_version.outputs.VERSION }}
+    - name: Set up JDK 8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - uses: r-lib/actions/setup-r@v1
+      with:
+        r-version: '3.6.2'
+    - name: install R packages
+      run: |
+        sudo apt-get install -y texlive-latex-base texlive texlive-fonts-extra texinfo qpdf
+        sudo Rscript -e "install.packages(c('curl', 'xml2', 'httr', 'devtools', 'testthat', 'knitr', 'rmarkdown', 'roxygen2', 'e1071', 'survival'), repos='https://cloud.r-project.org/')"
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        DEBCONF_NONINTERACTIVE_SEEN: true
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+        architecture: 'x64'
+    - name: Apply Patch
+      run: |-
+        # Remove -s option of tini. while gvisor does not support PR_SET_CHILD_SUBREAPER
+        sed -i 's/tini -s/tini/' $SPARK_ENTRYPOINT
+        # Add passwd entry. otherwise, entrypoint.sh will shows 'Container ENTRYPOINT failed to add passwd entry for anonymous UID'
+        # and executor will fail with  javax.security.auth.login.LoginException: java.lang.NullPointerException: invalid null input: name at com.sun.security.auth.UnixPrincipal.<init>(UnixPrincipal.java:71)
+        sed -i '/^USER/d' $BASE_DOCKERFILE
+        echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid && chown -R spark:spark /opt/spark/work-dir' >> $SPARK_ENTRYPOINT
+        echo 'USER ${spark_uid}' >> $SPARK_ENTRYPOINT
+
+        # Patch python Dockerfile to install multiple verison
+        cat $PYTHON_DOCKERFILE | \
+        sed -n '1,/RUN apt-get update/p;/rm -r \/root\/.cache/,$p' | \
+        sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make/g'
+
+        cat <<EOT >> $PYTHON_DOCKERFILE
+        RUN curl https://pyenv.run | bash && \
+            /home/spark/.pyenv/bin/pyenv install 3.6.9 && \
+            /home/spark/.pyenv/bin/pyenv install 3.7.7 && \
+            /home/spark/.pyenv/bin/pyenv install 3.8.1 && \
+            /home/spark/.pyenv/bin/pyenv global 3.7.7 && \
+            rm -rf /tmp/python-build*
+        EOT
+
+        # print
+        cat $BASE_DOCKERFILE
+        cat $PYTHON_DOCKERFILE
+      env:
+        SPARK_ENTRYPOINT: resource-managers/kubernetes/docker/src/main/dockerfiles/spark/entrypoint.sh
+        BASE_DOCKERFILE: resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
+        PYTHON_DOCKERFILE: resource-managers/kubernetes/docker/src/main/dockerfiles/spark/bindings/python/Dockerfile
+    - name: Build distribution
+      run: |-
+        ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        DEBCONF_NONINTERACTIVE_SEEN: true
+    - name: Build docker image
+      run: |-
+        ./bin/docker-image-tool.sh \
+        -r opendatastudio \
+        -t test \
+        -p kubernetes/dockerfiles/spark/bindings/python/Dockerfile \
+        -R kubernetes/dockerfiles/spark/bindings/R/Dockerfile \
+        build
+      working-directory: ./dist
+    - name: Push image
+      run: |-
+        docker images
