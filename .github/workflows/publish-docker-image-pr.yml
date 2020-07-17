@@ -1,11 +1,10 @@
-name: Publish docker image
+name: Pull request
 
 on:
-  release:
-    types: [created]
+  pull_request:
 
 jobs:
-  publish-release:
+  build-pullrequest:
     runs-on: ubuntu-latest
 
     steps:
@@ -77,7 +76,7 @@ jobs:
       run: |-
         ./bin/docker-image-tool.sh \
         -r opendatastudio \
-        -t ${{ steps.get_version.outputs.VERSION }} \
+        -t test \
         -p kubernetes/dockerfiles/spark/bindings/python/Dockerfile \
         -R kubernetes/dockerfiles/spark/bindings/R/Dockerfile \
         build
@@ -85,7 +84,3 @@ jobs:
     - name: Push image
       run: |-
         docker images
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        docker push opendatastudio/spark:${{ steps.get_version.outputs.VERSION }}
-        docker push opendatastudio/spark-py:${{ steps.get_version.outputs.VERSION }}
-        docker push opendatastudio/spark-r:${{ steps.get_version.outputs.VERSION }}
