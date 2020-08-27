@@ -67,6 +67,7 @@ jobs:
         PYTHON_DOCKERFILE: resource-managers/kubernetes/docker/src/main/dockerfiles/spark/bindings/python/Dockerfile
     - name: Build distribution
       run: |-
+        pip install wheel
         ./dev/make-distribution.sh --name spark --pip --r --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
       env:
         DEBIAN_FRONTEND: noninteractive
