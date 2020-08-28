@@ -44,7 +44,7 @@ jobs:
 
         # Patch python Dockerfile to install multiple verison
         cat $PYTHON_DOCKERFILE | sed -n '1,/RUN apt-get update/p;/rm -r \/root\/.cache/,$p' | sed 's/rm -r \/root\/.cache \&\&//g' > /tmp/Dockerfile
-        sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make \&\& ln -s \/home\/spark\/.pyenv\/versions\/3.6.9\/bin\/python3 \/usr\/bin\/python \&\& ln -s \/home\/spark\/.pyenv\/versions\/3.6.9\/bin\/python3 \/usr\/bin\/python3/g' /tmp/Dockerfile
+        sed -i 's/RUN apt-get update/RUN apt-get update \&\& apt-get install -y curl git zlib1g-dev libssl-dev libreadline-dev gcc make libffi-dev \&\& ln -s \/home\/spark\/.pyenv\/versions\/3.6.9\/bin\/python3 \/usr\/bin\/python \&\& ln -s \/home\/spark\/.pyenv\/versions\/3.6.9\/bin\/python3 \/usr\/bin\/python3/g' /tmp/Dockerfile
         
         cat <<EOT >> /tmp/Dockerfile
         RUN cd /home/spark/ && curl https://pyenv.run | bash && \
