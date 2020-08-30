@@ -45,6 +45,8 @@ jobs:
         echo 'ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar $SPARK_HOME/jars' >> $BASE_DOCKERFILE
         echo 'ADD https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.563/aws-java-sdk-bundle-1.11.563.jar $SPARK_HOME/jars' >> $BASE_DOCKERFILE
         echo 'ADD https://repo1.maven.org/maven2/io/delta/delta-core_2.12/0.7.0/delta-core_2.12-0.7.0.jar $SPARK_HOME/jars' >> $BASE_DOCKERFILE
+        echo 'RUN chmod 644 $SPARK_HOME/jars/hadoop-aws-3.2.0.jar $SPARK_HOME/jars/aws-java-sdk-bundle-1.11.563.jar $SPARK_HOME/jars/delta-core_2.12-0.7.0.jar'
+
         # create user and group
         echo 'RUN groupadd --gid $spark_uid spark && useradd -ms /bin/bash spark --uid $spark_uid --gid $spark_uid && chown -R spark:spark /opt/spark/work-dir' >> $BASE_DOCKERFILE
         echo 'USER ${spark_uid}' >> $BASE_DOCKERFILE
